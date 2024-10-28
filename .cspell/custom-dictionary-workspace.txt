@@ -1,0 +1,6 @@
+# Custom Dictionary Words
+CSAW
+endmodule
+kwargs
+openai
+Verilog
