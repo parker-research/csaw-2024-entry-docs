@@ -52,3 +52,122 @@ make test # Works now.
 ## 2024-10-28
 
 * Created code to summarize verilog modules.
+* Executed summary code on the following projects:
+    1. picorv32
+    2. ultraembedded-riscv
+    3. RISC-V-Processor (https://github.com/ash-olakangal/RISC-V-Processor)
+
+* Line counts of projects:
+
+```
+> cat picorv32-csaw-2024/**/*.v | wc -l
+9133
+> cat RISC-V-Processor-csaw-2024/**/*.v | wc -l
+882
+> cat ultraembedded-riscv-csaw-2024/**/*.v | wc -l
+13992
+> cat ultraembedded-biriscv/**/*.v | wc -l
+13948
+
+```
+
+## 2024-10-31
+
+### Implementation Planning
+
+* Working on getting an implementation of the proposed bug working with assistance from ChatGPT.
+
+* Constructed base prompt:
+> I want to modify the ultraembedded-riscv project to insert an optimization-of-sorts that listening for a specific sequence of "memory store" instructions to be executed (which store the ASCII text "OPTIMIZE_START"). When this happens, I want the address of the next byte in memory past that to be stored to a "optimization_start_memory_address" register. Then, continue executing store instructions as they come in. In the stores, when the ASCII bytes "DONE" get stored, record the address of the "D" character into a memory called optimization_end_memory_address. Important optimization bytes will be stored in memory between those two addresses stored in registers which will be used later. 
+
+* GPT Chat: Learn about RISC-V instructions and store widths.
+* GPT Chat: Explain project a few times to see how it does. Did bad; didn't even grasp suggesting a state machine.
+* GPT Chat: Give it problem prompt, description of summary, and summary.
+
+> (Base project) I'm about to paste in a summary of each of the modules in the project. Please help rank the top 3 modules we should explore to setup a state machine which will track and then store these elements. (Summary)
+
+* Investigate these modules (same suggestions twice):
+    * riscv_lsu (Load/Store Unit)
+    * dcache_core (Data Cache Core)
+    * riscv_exec (Execution Unit)
+
+* Doing it with filename, we got these:
+    * riscv_core.v
+    * riscv_decoder.v (x2)
+    * dcache_core.v
+    * riscv_lsu.v
+
+### ultraembedded-riscv Test Setup
+
+* Must install libelf: `sudo apt install libelf-dev`
+* Must install `bfd.h` from binutils-dev: `sudo apt install binutils-dev`
+* Discovered SoC: https://github.com/ultraembedded/riscv_soc
+* Easiest to setup oss-cad: https://github.com/YosysHQ/oss-cad-suite-build
+* After a while, created a good Dockerfile that lets you build and move on with life, as well as a Gitignore. Using that now.
+* Decompile .elf files with: `/opt/riscv32i/bin/riscv32-unknown-elf-objdump --disassemble-all ./basic.elf  > basic.elf.disasm`
+
+* Inside Docker container:
+```bash
+cd /project/top_tcm_axi/tb
+make clean
+make
+make run
+
+# Run a specific .elf file.
+./build/test.x -f ../../isa_sim/images/basic.elf
+```
+
+```
+./build/test.x --help
+
+        SystemC 2.3.3-Accellera --- Nov  1 2024 03:34:48
+        Copyright (c) 1996-2018 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Info: (I702) default timescale unit used for tracing: 1 ns (sysc_wave.vcd)
+./build/test.x: invalid option -- '-'
+./build/test.x: invalid option -- 'h'
+Usage:
+-f filename.elf = Executable to load (ELF)
+-t [0/1]        = Enable program trace
+-v 0xX          = Trace Mask
+-c nnnn         = Max instructions to execute
+-r 0xnnnn       = Stop at PC address
+-e 0xnnnn       = Trace from PC address
+-b 0xnnnn       = Memory base address (for binary loads)
+-s nnnn         = Memory size (for binary loads)
+-p dumpfile.bin = Post simulation memory dump file
+-j sym_name     = Symbol for memory dump start
+-k sym_name     = Symbol for memory dump end
+TB: Aborted at 10 ns
+
+# ./build/test.x -f ../../isa_sim/images/basic.elf -t 1
+
+        SystemC 2.3.3-Accellera --- Nov  1 2024 03:34:48
+        Copyright (c) 1996-2018 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Info: (I702) default timescale unit used for tracing: 1 ns (sysc_wave.vcd)
+Memory: 0x2000 - 0x3cd3 (Size=7KB) [.text]
+Memory: 0x3cd4 - 0x3ce7 (Size=0KB) [.data]
+Memory: 0x3ce8 - 0x4d07 (Size=4KB) [.bss]
+Starting from 0x00002000
+
+Test:
+1. Initialised data
+2. Multiply
+3. Divide
+4. Shift left
+5. Shift right
+6. Shift right arithmetic
+7. Signed comparision
+8. Word access
+9. Byte access
+10. Comparision
+TB: Aborted at 109020 ns
+```
+
+* Finally got ultraembedded-riscv working with linker script and gcc so we can run arbitrary code. Demo examples in `02-trial-gcc`.
+
+* Next steps: Get GPT to create C code to test it. Assert that it works as-is now. Then, get GPT to start injecting the vulnerability.
+
