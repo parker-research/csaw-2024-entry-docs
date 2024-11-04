@@ -215,9 +215,21 @@ b7020001130380051373f30fb3e262007390227b6ff0dfff
 
 ## 2024-11-02
 
-Working more mostly on Verilog modification.
+* Worked on Verilog modifications a bit, especially using Aider.
+* Seeing that the code output often makes no sense, and it has trouble tracking inputs/outputs of interconnected modules.
 
-Alternative huge pivot: Could try to make it so that the processor tries hacks that make the testbenches still pass, but find cases where the result of executing instructions is different. Limit changes to basically random changes to the code.
+## 2024-11-03
+
+* Working more mostly on Verilog modification.
+
+* Alternative huge pivot idea: Could try to make it so that the processor tries hacks that make the testbenches still pass, but find cases where the result of executing instructions is different. Limit changes to basically random changes to the code.
+
+* Just learned about `lowRISC-ibex`, which may be a better core to mod.
 
 ### Verilog Modification
 
+* With ChatGPT and Aider, worked to get the bugs out, update the state machine a bit, and inject the payload.
+* Biggest bug was that the payload had the wrong byte ordering. When executed, it caused the core to crash.
+
+* Next design step: Obfuscate the inserted code.
+* Next design step: Demo on FPGA, maybe.
