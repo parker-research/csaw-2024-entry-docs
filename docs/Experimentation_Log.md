@@ -171,3 +171,53 @@ TB: Aborted at 109020 ns
 
 * Next steps: Get GPT to create C code to test it. Assert that it works as-is now. Then, get GPT to start injecting the vulnerability.
 
+## 2024-11-01
+
+### Create Vulnerability Injection Payload
+
+> What is a good sequence of RISC-V instructions to run to illustrate that a remote code execution vulnerability is being executed, without being malicious?
+
+> Help me write RISC-V assembly which will call the following C function on loop, with the argument containing the ASCII value of "X".
+```
+static inline void sim_putc(int ch)
+{
+    const unsigned int arg = CSR_SIM_CTRL_PUTC | (ch & 0xFF);
+    asm volatile ("csrw dscratch,%0": : "r" (arg));
+}
+```
+
+* Created the payload we'll try to inject. We're going to inject it as hex so it's covert and easy to inject (e.g., using a keyboard).
+```
+# `isa_sim/images/vuln_demo_1/injection_demo_payload_1.s`
+hexdump -C payload.bin
+00000000  b7 02 00 01 13 03 80 05  13 73 f3 0f b3 e2 62 00  |.........s....b.|
+00000010  73 90 22 7b 6f f0 df ff                           |s."{o...|
+
+# Simply:
+b7020001130380051373f30fb3e262007390227b6ff0dfff
+```
+
+* 24 bytes of instructions at 4 bytes (32 bits) per instruction is 6 instructions. Very simple demo.
+
+* Now, create C code which writes that to an array using Store Byte instructions. Easy.
+
+### Verilog Modification
+
+* Start branch `03-modify-verilog`.
+
+* Tough finding the place to insert the finite state machine. Try breaking it up.
+
+* Modifying scope a bit. New base prompt:
+
+> I want to modify the ultraembedded-riscv project (written in Verilog) to insert an optimization-of-sorts that listens for a specific sequence of "STORE BYTE (SB)" instructions to be executed (which store the ASCII text `OPTIMIZ[`). When this happens, I want the address of the next byte in memory past that to be stored to a `optimization_start_memory_address` register. Then, continue executing store instructions as they come in. In the stores, when the ASCII byte "]" gets stored, record the address of the "]" character into a memory called `optimization_end_memory_address`. Important optimization bytes will be stored in memory between those two addresses stored in registers which will be used later. 
+
+> I want to modify the ultraembedded-riscv project (written in Verilog) to insert an optimization-of-sorts. We've already inserted some of the optimization, and there is now a `optimization_start_memory_address` output from the `riscv_exec` module. Now, I want to add a new INPUT to the place where the program counter is updated with branches. Send this start_memory_address to the `riscv_decoder` module. When `optimize_state == 5'd8`, I want the processor to jump-and-link (jal) to the `optimization_start_memory_address` and start executing from there, until it reaches the `optimization_end_memory_address`. Then, it should jump back to the original program counter and continue executing as normal.
+
+## 2024-11-02
+
+Working more mostly on Verilog modification.
+
+Alternative huge pivot: Could try to make it so that the processor tries hacks that make the testbenches still pass, but find cases where the result of executing instructions is different. Limit changes to basically random changes to the code.
+
+### Verilog Modification
+
