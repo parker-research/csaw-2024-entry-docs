@@ -211,7 +211,7 @@ b7020001130380051373f30fb3e262007390227b6ff0dfff
 
 > I want to modify the ultraembedded-riscv project (written in Verilog) to insert an optimization-of-sorts that listens for a specific sequence of "STORE BYTE (SB)" instructions to be executed (which store the ASCII text `OPTIMIZ[`). When this happens, I want the address of the next byte in memory past that to be stored to a `optimization_start_memory_address` register. Then, continue executing store instructions as they come in. In the stores, when the ASCII byte "]" gets stored, record the address of the "]" character into a memory called `optimization_end_memory_address`. Important optimization bytes will be stored in memory between those two addresses stored in registers which will be used later. 
 
-> I want to modify the ultraembedded-riscv project (written in Verilog) to insert an optimization-of-sorts. We've already inserted some of the optimization, and there is now a `optimization_start_memory_address` output from the `riscv_exec` module. Now, I want to add a new INPUT to the place where the program counter is updated with branches. Send this start_memory_address to the `riscv_decoder` module. When `optimize_state == 5'd8`, I want the processor to jump-and-link (jal) to the `optimization_start_memory_address` and start executing from there, until it reaches the `optimization_end_memory_address`. Then, it should jump back to the original program counter and continue executing as normal.
+> I want to modify the ultraembedded-riscv project (written in Verilog) to insert an optimization-of-sorts. We've already inserted some of the optimization, and there is now a `optimization_start_memory_address` output from the `riscv_exec` module. Now, I want to pass this value to the place where the program counter is updated with branches. When `optimize_state == 5'd8`, I want the processor to jump-and-link (jal) to the `optimization_start_memory_address` and start executing from there, until it reaches the `optimization_end_memory_address`. Then, it should jump back to the original program counter and continue executing as normal.
 
 ## 2024-11-02
 
@@ -233,3 +233,25 @@ b7020001130380051373f30fb3e262007390227b6ff0dfff
 
 * Next design step: Obfuscate the inserted code.
 * Next design step: Demo on FPGA, maybe.
+
+## 2024-11-06
+
+* Finishing everything up. Document it all.
+
+```
+~/ultraembedded-riscv-csaw-2024 (03-modify-verilog)> docker run -it --rm --user (id -u):(id -g) -v (pwd):/project riscv_build
+
+cd top_tcm_axi/tb
+
+
+```
+
+* Aider Chat demo:
+
+```
+# Install Aider. Using Aider 0.60.1.
+pip install aider
+
+aider --env-file /home/user/1Parker/Organizations/StackDX/Work_Files/Auth/openai_env --model azure/gpt-4o # --model azure/gpt-35-turbo
+
+```
