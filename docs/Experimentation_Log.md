@@ -178,7 +178,7 @@ TB: Aborted at 109020 ns
 > What is a good sequence of RISC-V instructions to run to illustrate that a remote code execution vulnerability is being executed, without being malicious?
 
 > Help me write RISC-V assembly which will call the following C function on loop, with the argument containing the ASCII value of "X".
-```
+```c
 static inline void sim_putc(int ch)
 {
     const unsigned int arg = CSR_SIM_CTRL_PUTC | (ch & 0xFF);
@@ -248,10 +248,16 @@ cd top_tcm_axi/tb
 
 * Aider Chat demo:
 
-```
+```bash
 # Install Aider. Using Aider 0.60.1.
 pip install aider
 
-aider --env-file /home/user/1Parker/Organizations/StackDX/Work_Files/Auth/openai_env --model azure/gpt-4o # --model azure/gpt-35-turbo
+aider ~/openai_env --model azure/gpt-4o # --model azure/gpt-35-turbo
 
+```
+
+To run the `linux.elf` example, you may have to comment out this assertion line in `testbench.h`.
+
+```c
+// sc_assert(base >= 0x00000000 && ((base + size) < (0x00000000 + (64 * 1024))));
 ```

@@ -62,11 +62,3 @@ python -m parker_csaw obfuscate <input-file-path> <base-branch-or-commit>
 * Create tool to automatically inject this vulnerability to any arbitrary RISC-V core.
 * Autonomous testing with and control of the Aider Chat tool.
 * Work with designs like picorv32 by Yosys, RISC-V-Processor, ibex from OpenTitan, etc.
-* 
-
-## TODO:
-
-* Finish obfuscate
-* Presentation
-* Report
-* Run the exploit again and take screenshots
