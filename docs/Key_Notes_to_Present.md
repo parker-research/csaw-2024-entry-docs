@@ -26,7 +26,13 @@
 * Aider log.
 * ChatGPT logs.
 * Markdown summary of the Verilog modules.
-* Diagrams
+* Diagrams.
+* Demo video.
+* Presentation slides.
+* Report.
+* Dockerfile for the RISC-V core.
+* Samples of the exploit being run on the core.
+
 
 ## Tool Setup and Usage
 
